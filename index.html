@@ -1,0 +1,1244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CKP LLM — Compiled Knowledge Pattern</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap');
+
+    :root {
+      --bg: #0d0d0d;
+      --surface: #141414;
+      --surface-2: #1c1c1c;
+      --border: #2a2a2a;
+      --border-light: #222;
+      --accent: #c8f060;
+      --accent-dim: rgba(200,240,96,0.12);
+      --accent-dim2: rgba(200,240,96,0.06);
+      --text: #e8e8e0;
+      --text-muted: #888;
+      --text-dim: #555;
+      --high: #c8f060;
+      --mid: #60c8f0;
+      --low: #f09060;
+      --code-bg: #111;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      line-height: 1.7;
+      font-size: 16px;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      background: rgba(13,13,13,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-logo {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--accent);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--accent); }
+
+    @media (max-width: 640px) {
+      .nav-links { display: none; }
+    }
+
+    /* LAYOUT */
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+
+    section {
+      padding: 5rem 0 3rem;
+    }
+
+    section + section {
+      border-top: 1px solid var(--border-light);
+    }
+
+    /* HERO */
+    #hero {
+      padding: 9rem 0 5rem;
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .hero-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--accent);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .hero-label::before {
+      content: '';
+      display: inline-block;
+      width: 24px;
+      height: 1px;
+      background: var(--accent);
+    }
+
+    h1 {
+      font-family: 'Instrument Serif', serif;
+      font-size: clamp(2.6rem, 6vw, 4.5rem);
+      font-weight: 400;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      margin-bottom: 1.5rem;
+    }
+
+    h1 em {
+      font-style: italic;
+      color: var(--accent);
+    }
+
+    .hero-sub {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      max-width: 560px;
+      line-height: 1.7;
+      margin-bottom: 2.5rem;
+    }
+
+    .hero-meta {
+      display: flex;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .hero-meta-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    .hero-meta-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .hero-meta-value {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    /* SECTION HEADERS */
+    .section-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      margin-bottom: 1rem;
+    }
+
+    h2 {
+      font-family: 'Instrument Serif', serif;
+      font-size: clamp(1.6rem, 3vw, 2.2rem);
+      font-weight: 400;
+      line-height: 1.2;
+      color: var(--text);
+      margin-bottom: 1.5rem;
+    }
+
+    h3 {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--accent);
+      letter-spacing: 0.05em;
+      margin: 2rem 0 0.75rem;
+      text-transform: uppercase;
+    }
+
+    p {
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+      max-width: 680px;
+    }
+
+    strong { color: var(--text); font-weight: 500; }
+
+    /* CODE BLOCKS */
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1.25rem 1.5rem;
+      overflow-x: auto;
+      margin: 1.25rem 0;
+      position: relative;
+    }
+
+    pre code {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.78rem;
+      line-height: 1.7;
+      color: var(--text);
+    }
+
+    .code-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.4rem;
+    }
+
+    code {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.82em;
+      background: var(--surface-2);
+      padding: 0.1em 0.4em;
+      border-radius: 3px;
+      color: var(--accent);
+    }
+
+    pre code { background: none; padding: 0; border-radius: 0; font-size: inherit; }
+
+    /* COMMENT COLOR IN CODE */
+    .cm { color: var(--text-dim); }
+    .ck { color: var(--accent); font-weight: 500; }
+    .cv-high { color: var(--high); }
+    .cv-mid { color: var(--mid); }
+    .cv-low { color: var(--low); }
+    .cv { color: var(--text-muted); }
+
+    /* CALLOUT */
+    .callout {
+      background: var(--accent-dim2);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 6px 6px 0;
+      padding: 1.1rem 1.4rem;
+      margin: 1.5rem 0;
+    }
+
+    .callout p {
+      margin: 0;
+      color: var(--text);
+      font-size: 0.95rem;
+    }
+
+    .callout strong { color: var(--accent); }
+
+    /* COMPARISON TABLE */
+    .compare {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+
+    @media (max-width: 600px) {
+      .compare { grid-template-columns: 1fr; }
+    }
+
+    .compare-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.25rem;
+    }
+
+    .compare-box.highlight {
+      border-color: var(--accent);
+      background: var(--accent-dim2);
+    }
+
+    .compare-title {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+      margin-bottom: 0.75rem;
+    }
+
+    .compare-box.highlight .compare-title { color: var(--accent); }
+
+    .compare-item {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      padding: 0.3rem 0;
+      border-bottom: 1px solid var(--border-light);
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+    }
+
+    .compare-item:last-child { border-bottom: none; }
+
+    .compare-item::before {
+      content: '—';
+      color: var(--text-dim);
+      font-size: 0.7rem;
+      flex-shrink: 0;
+    }
+
+    .compare-box.highlight .compare-item::before { content: '✓'; color: var(--accent); }
+
+    /* TIER BADGES */
+    .tier {
+      display: inline-block;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      padding: 0.15em 0.5em;
+      border-radius: 3px;
+      text-transform: uppercase;
+    }
+
+    .tier-high { background: rgba(200,240,96,0.15); color: var(--high); }
+    .tier-mid  { background: rgba(96,200,240,0.15); color: var(--mid); }
+    .tier-low  { background: rgba(240,144,96,0.15); color: var(--low); }
+
+    /* TIER TABLE */
+    .tier-grid {
+      display: grid;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      margin: 1.5rem 0;
+    }
+
+    .tier-row {
+      display: grid;
+      grid-template-columns: 90px 1fr 90px 1fr;
+      gap: 0;
+      background: var(--surface);
+      padding: 0.9rem 1.25rem;
+      align-items: start;
+    }
+
+    .tier-row.header {
+      background: var(--surface-2);
+      padding: 0.6rem 1.25rem;
+    }
+
+    .tier-row.header span {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.62rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+    }
+
+    .tier-cell {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      padding-right: 1rem;
+    }
+
+    .tier-cell:nth-child(3) {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--text-dim);
+    }
+
+    @media (max-width: 600px) {
+      .tier-row {
+        grid-template-columns: 80px 1fr;
+        gap: 0.25rem;
+      }
+      .tier-row.header { display: none; }
+      .tier-cell:nth-child(3),
+      .tier-cell:nth-child(4) {
+        grid-column: 1 / -1;
+        padding-top: 0.25rem;
+      }
+    }
+
+    /* FLOW */
+    .flow {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      margin: 1.5rem 0;
+    }
+
+    .flow-step {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+      padding: 1rem 0;
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .flow-step:last-child { border-bottom: none; }
+
+    .flow-num {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--accent);
+      background: var(--accent-dim);
+      border-radius: 3px;
+      padding: 0.2em 0.5em;
+      flex-shrink: 0;
+      margin-top: 0.1rem;
+    }
+
+    .flow-text {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .flow-text strong { color: var(--text); }
+
+    /* RULES LIST */
+    .rules {
+      list-style: none;
+      margin: 1rem 0;
+    }
+
+    .rules li {
+      display: flex;
+      gap: 0.75rem;
+      align-items: baseline;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--border-light);
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .rules li:last-child { border-bottom: none; }
+
+    .rules li::before {
+      content: attr(data-n);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+
+    /* FAQ */
+    .faq-item {
+      padding: 1.25rem 0;
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .faq-q {
+      font-size: 0.95rem;
+      color: var(--text);
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+    }
+
+    .faq-a {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      max-width: 640px;
+    }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--border-light);
+      padding: 2.5rem 0;
+      margin-top: 4rem;
+    }
+
+    .footer-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .footer-text {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--text-dim);
+    }
+
+    .footer-link {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+
+    .footer-link:hover { color: var(--accent); border-color: var(--accent); }
+
+    /* DIVIDER */
+    .divider {
+      height: 1px;
+      background: var(--border-light);
+      margin: 2rem 0;
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-logo">CKP LLM</span>
+  <ul class="nav-links">
+    <li><a href="#problem">Problem</a></li>
+    <li><a href="#pattern">Pattern</a></li>
+    <li><a href="#anatomy">Anatomy</a></li>
+    <li><a href="#ingest">Ingest</a></li>
+    <li><a href="#query">Query</a></li>
+    <li><a href="#examples">Examples</a></li>
+    <li><a href="#integration">Integration</a></li>
+  </ul>
+</nav>
+
+<div class="container">
+
+  <!-- HERO -->
+  <section id="hero">
+    <div class="hero-label">An evolution of the Karpathy LLM Wiki Pattern</div>
+    <h1>Compiled Knowledge<br><em>Pattern LLM</em></h1>
+    <p class="hero-sub">
+      A file-native approach to LLM knowledge bases that pre-compiles semantic relationships at ingest time — delivering faster, higher-quality responses without vector databases, embedding models, or infrastructure.
+    </p>
+    <div class="hero-meta">
+      <div class="hero-meta-item">
+        <span class="hero-meta-label">Format</span>
+        <span class="hero-meta-value">Any (.md, .html, .txt)</span>
+      </div>
+      <div class="hero-meta-item">
+        <span class="hero-meta-label">Infrastructure</span>
+        <span class="hero-meta-value">Zero</span>
+      </div>
+      <div class="hero-meta-item">
+        <span class="hero-meta-label">Works with</span>
+        <span class="hero-meta-value">Any LLM, any agent</span>
+      </div>
+      <div class="hero-meta-item">
+        <span class="hero-meta-label">Author</span>
+        <span class="hero-meta-value">Alessandro Marocchini</span>
+      </div>
+      <div class="hero-meta-item">
+        <span class="hero-meta-label">Builds on</span>
+        <span class="hero-meta-value">Karpathy LLM Wiki</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROBLEM -->
+  <section id="problem">
+    <div class="section-label">01 — The Problem</div>
+    <h2>RAG retrieves. Wikis compile.<br>Neither routes.</h2>
+
+    <p>Karpathy's LLM Wiki pattern is a genuine improvement over RAG: instead of retrieving and forgetting, it compiles knowledge into structured files loaded directly into context. The heavy reasoning happens at write time, not at query time.</p>
+
+    <p>But even compiled wikis have a structural gap: <strong>when you load a knowledge base, you load all of it.</strong> The LLM receives 20 files to answer a question that needs 3. Context is noisy. Response quality drops. Speed suffers.</p>
+
+    <p>And the connections between concepts — the "see also" links — are plain text. The LLM must infer the strength and type of every relationship on every query, from scratch, every time.</p>
+
+    <div class="compare">
+      <div class="compare-box">
+        <div class="compare-title">RAG</div>
+        <div class="compare-item">Retrieves chunks, forgets context</div>
+        <div class="compare-item">Runtime embedding cost</div>
+        <div class="compare-item">Vector database required</div>
+        <div class="compare-item">Probabilistic, misses precision</div>
+      </div>
+      <div class="compare-box">
+        <div class="compare-title">LLM Wiki (Karpathy)</div>
+        <div class="compare-item">Loads all files into context</div>
+        <div class="compare-item">No retrieval step — clean</div>
+        <div class="compare-item">No infrastructure needed</div>
+        <div class="compare-item">Relationships are implicit prose</div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <p><strong>The missing piece:</strong> a lightweight routing layer that tells the LLM <em>which</em> files to load, and pre-declares <em>how</em> concepts relate — computed once at ingest, reused on every query.</p>
+    </div>
+  </section>
+
+  <!-- PATTERN -->
+  <section id="pattern">
+    <div class="section-label">02 — The Pattern</div>
+    <h2>Five additions.<br>Same files. Same workflow.</h2>
+
+    <p>CKP adds five structured fields to the header of each knowledge file. No new tools. No new infrastructure. The same folder, the same Git workflow, the same "load into context" approach — just richer files.</p>
+
+    <h3>The five fields</h3>
+
+    <div class="tier-grid">
+      <div class="tier-row header">
+        <span>Field</span>
+        <span>Purpose</span>
+        <span>Max size</span>
+        <span>Benefit</span>
+      </div>
+      <div class="tier-row">
+        <div class="tier-cell"><code>TLDR</code></div>
+        <div class="tier-cell">One-sentence summary optimised for LLM consumption</div>
+        <div class="tier-cell">1 sentence</div>
+        <div class="tier-cell">Immediate answer without reading the full file</div>
+      </div>
+      <div class="tier-row">
+        <div class="tier-cell"><code>ANSWERS_WHEN</code></div>
+        <div class="tier-cell">Keywords that signal this file is relevant</div>
+        <div class="tier-cell">5–10 words</div>
+        <div class="tier-cell">Fast keyword routing — BM25-style</div>
+      </div>
+      <div class="tier-row">
+        <div class="tier-cell"><code>SIMILAR_HIGH</code></div>
+        <div class="tier-cell">Concepts this file directly depends on or extends</div>
+        <div class="tier-cell">Max 3</div>
+        <div class="tier-cell">Always load these together</div>
+      </div>
+      <div class="tier-row">
+        <div class="tier-cell"><code>SIMILAR_MID</code></div>
+        <div class="tier-cell">Concepts in the same domain, often co-relevant</div>
+        <div class="tier-cell">Max 5</div>
+        <div class="tier-cell">Load conditionally based on query</div>
+      </div>
+      <div class="tier-row">
+        <div class="tier-cell"><code>VALIDATED</code></div>
+        <div class="tier-cell">Timestamp per relationship, not per file</div>
+        <div class="tier-cell">YYYY-MM per entry</div>
+        <div class="tier-cell">Staleness detection at relationship level</div>
+      </div>
+    </div>
+
+    <p>There is no <code>SIMILAR_LOW</code> field. Weak relationships add noise, not signal — the LLM infers them from content.</p>
+
+    <h3>Why categorical tiers instead of decimal scores</h3>
+
+    <p>LLMs are significantly more consistent when classifying into categories than when assigning decimal scores. A score of <code>0.73</code> from one session may be <code>0.61</code> in another. But <strong>HIGH</strong> vs <strong>MID</strong> — with a fixed rubric and anchor examples — produces stable, reproducible results across any LLM and any session.</p>
+
+    <div class="tier-grid">
+      <div class="tier-row header">
+        <span>Tier</span>
+        <span>Definition</span>
+        <span>Cap</span>
+        <span>Anchor example</span>
+      </div>
+      <div class="tier-row">
+        <div class="tier-cell"><span class="tier tier-high">HIGH</span></div>
+        <div class="tier-cell">One concept requires understanding the other. Direct dependency or extension.</div>
+        <div class="tier-cell">3</div>
+        <div class="tier-cell"><code>jwt</code> ↔ <code>oauth2</code></div>
+      </div>
+      <div class="tier-row">
+        <div class="tier-cell"><span class="tier tier-mid">MID</span></div>
+        <div class="tier-cell">Same domain, frequently relevant together. No direct dependency.</div>
+        <div class="tier-cell">5</div>
+        <div class="tier-cell"><code>jwt</code> ↔ <code>http-headers</code></div>
+      </div>
+      <div class="tier-row">
+        <div class="tier-cell"><span class="tier" style="background:rgba(85,85,85,0.2);color:var(--text-dim)">—</span></div>
+        <div class="tier-cell">Loosely related, rarely co-relevant. Not stored.</div>
+        <div class="tier-cell">0</div>
+        <div class="tier-cell"><code>jwt</code> ↔ <code>database</code></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ANATOMY -->
+  <section id="anatomy">
+    <div class="section-label">03 — File Anatomy</div>
+    <h2>A knowledge file,<br>fully annotated.</h2>
+
+    <p>The CKP header is format-agnostic. The example below uses a plain text block that works in Markdown, HTML, or any other format. The body below the header is unchanged — write it however you normally would.</p>
+
+    <div class="code-label">knowledge file — any format</div>
+    <pre><code><span class="cm">---</span>
+<span class="ck">CONCEPT:</span>     <span class="cv">JWT Authentication</span>
+<span class="ck">TLDR:</span>        <span class="cv">Stateless token-based auth — server signs a token, client stores and sends it.</span>
+<span class="ck">ANSWERS_WHEN:</span> <span class="cv">authentication, token, login, bearer, stateless, jwt, auth</span>
+
+<span class="ck">SIMILAR_HIGH:</span> <span class="cv-high">oauth2:2025-03, refresh-token:2025-03, bearer-token:2025-03</span>
+<span class="ck">SIMILAR_MID:</span>  <span class="cv-mid">http-headers:2025-03, cors:2025-03, api-security:2025-03</span>
+
+<span class="ck">CONFIDENCE:</span>  <span class="cv">high</span>
+<span class="ck">VALIDATED:</span>   <span class="cv">2025-03</span>
+<span class="cm">---</span>
+
+<span class="cm"># JWT Authentication
+
+Your normal content here. Nothing changes below the header.
+Write in Markdown, HTML, plain text — whatever fits your workflow.</span></code></pre>
+
+    <h3>Timestamp per relationship, not per file</h3>
+
+    <p>The date on each SIMILAR entry (<code>oauth2:2025-03</code>) records when <em>that specific relationship</em> was last validated — not when the file was last touched. This makes staleness detectable at the relationship level, not just the file level.</p>
+
+    <p>If <code>oauth2</code> was updated after <code>2025-03</code>, that specific relationship is potentially stale and should be re-evaluated at next ingest. The rest of the file's relationships remain valid.</p>
+
+    <h3>The index file</h3>
+
+    <p>A single <code>index</code> file at the root of your knowledge base aggregates only the headers — no body content. It is the only file always loaded into context. Everything else is loaded on demand.</p>
+
+    <div class="code-label">index file</div>
+    <pre><code><span class="cm">---</span>
+<span class="ck">CONCEPT:</span>     <span class="cv">jwt-authentication</span>
+<span class="ck">TLDR:</span>        <span class="cv">Stateless token-based auth — server signs a token, client stores and sends it.</span>
+<span class="ck">ANSWERS_WHEN:</span> <span class="cv">authentication, token, login, bearer, stateless, jwt</span>
+<span class="cm">---</span>
+
+<span class="cm">---</span>
+<span class="ck">CONCEPT:</span>     <span class="cv">oauth2</span>
+<span class="ck">TLDR:</span>        <span class="cv">Delegated authorisation framework. Issues access tokens on behalf of users.</span>
+<span class="ck">ANSWERS_WHEN:</span> <span class="cv">oauth, authorization, delegate, scope, grant, flow</span>
+<span class="cm">---</span>
+
+<span class="cm">... one header block per file. No body content.</span></code></pre>
+
+    <p>The index stays small regardless of knowledge base size because it contains only the five header fields — never the concept body. With 50 files, it remains a few hundred lines.</p>
+  </section>
+
+  <!-- INGEST -->
+  <section id="ingest">
+    <div class="section-label">04 — The Ingest Process</div>
+    <h2>Computation happens once.<br>Reused on every query.</h2>
+
+    <p>Ingest is the only moment where semantic work occurs. At query time, the LLM reads pre-computed relationships — it never re-derives them.</p>
+
+    <h3>When ingest runs</h3>
+
+    <div class="flow">
+      <div class="flow-step">
+        <span class="flow-num">trigger</span>
+        <span class="flow-text">Every time you <strong>create or modify</strong> a knowledge file. In code: a git hook. In an agent: a rule in <code>AGENT.md</code>.</span>
+      </div>
+      <div class="flow-step">
+        <span class="flow-num">01</span>
+        <span class="flow-text">LLM reads the new or modified file and the current index.</span>
+      </div>
+      <div class="flow-step">
+        <span class="flow-num">02</span>
+        <span class="flow-text">LLM applies the <strong>fixed rubric</strong> (see below) to classify relationships against all existing concepts.</span>
+      </div>
+      <div class="flow-step">
+        <span class="flow-num">03</span>
+        <span class="flow-text">LLM writes the updated header into the file: <code>SIMILAR_HIGH</code>, <code>SIMILAR_MID</code>, timestamps, <code>VALIDATED</code>.</span>
+      </div>
+      <div class="flow-step">
+        <span class="flow-num">04</span>
+        <span class="flow-text">LLM updates the index with the new header block. No other files are touched.</span>
+      </div>
+    </div>
+
+    <h3>The fixed rubric — copy this into your ingest prompt</h3>
+
+    <p>The rubric must be identical on every ingest call. This is what makes scores consistent across LLMs and sessions.</p>
+
+    <div class="code-label">ingest prompt — rubric block</div>
+    <pre><code><span class="cv">You are updating the header of a knowledge file.
+Classify the relationship between this concept and each existing concept
+using exactly these three tiers:</span>
+
+<span class="cv-high">HIGH</span> <span class="cv">— one concept requires understanding the other.</span>
+     <span class="cv">Direct dependency, extension, or prerequisite.</span>
+     <span class="cv">Anchor: jwt ↔ oauth2 = HIGH</span>
+
+<span class="cv-mid">MID</span>  <span class="cv">— same domain, frequently used together.</span>
+     <span class="cv">No direct dependency.</span>
+     <span class="cv">Anchor: jwt ↔ http-headers = MID</span>
+
+<span class="cv">NONE — loosely related or rarely co-relevant. Do not store.</span>
+     <span class="cv">Anchor: jwt ↔ database = NONE</span>
+
+<span class="cv">Rules:</span>
+<span class="cv">- SIMILAR_HIGH: select at most 3. If fewer qualify, write fewer.</span>
+<span class="cv">- SIMILAR_MID:  select at most 5. If fewer qualify, write fewer.</span>
+<span class="cv">- Do not store NONE relationships.</span>
+<span class="cv">- Append today's date (YYYY-MM) to each entry: concept:YYYY-MM</span>
+<span class="cv">- Only update the header. Do not modify the body content.</span></code></pre>
+
+    <h3>Using in AGENT.md</h3>
+
+    <p>For coding agents like Claude Code, add this rule to your <code>AGENT.md</code>. The agent treats it as a mandatory step after every file write inside your knowledge folder.</p>
+
+    <div class="code-label">AGENT.md — knowledge base rule</div>
+    <pre><code><span class="cm">## Knowledge Base — Mandatory Rule
+
+Whenever you create or modify a file inside `/knowledge/`:
+
+1. Re-read the file you just wrote.
+2. Apply the CKP ingest rubric (see below) to classify
+   relationships against the current index.
+3. Update the file header: SIMILAR_HIGH (max 3),
+   SIMILAR_MID (max 5), timestamps, VALIDATED.
+4. Update /knowledge/index with the new header block.
+
+This step is part of the task. It is not optional.
+
+[paste the rubric block here]</span></code></pre>
+  </section>
+
+  <!-- QUERY -->
+  <section id="query">
+    <div class="section-label">05 — Query Time</div>
+    <h2>Load less. Answer faster.<br>Zero computation.</h2>
+
+    <p>At query time the LLM performs no semantic computation. It reads pre-compiled structure and routes accordingly.</p>
+
+    <div class="flow">
+      <div class="flow-step">
+        <span class="flow-num">01</span>
+        <span class="flow-text"><strong>Load index only.</strong> The index contains all TLDRs and ANSWERS_WHEN keywords. It is always in context. Body files are not.</span>
+      </div>
+      <div class="flow-step">
+        <span class="flow-num">02</span>
+        <span class="flow-text"><strong>Keyword match.</strong> Query terms are matched against ANSWERS_WHEN across all index entries. Relevant files are identified in one pass.</span>
+      </div>
+      <div class="flow-step">
+        <span class="flow-num">03</span>
+        <span class="flow-text"><strong>Load matched files + their SIMILAR_HIGH.</strong> Files that match the query are loaded. Their SIMILAR_HIGH entries are loaded unconditionally — they are always needed together.</span>
+      </div>
+      <div class="flow-step">
+        <span class="flow-num">04</span>
+        <span class="flow-text"><strong>Load SIMILAR_MID if relevant.</strong> MID entries are loaded only if the query also relates to their domain. Checked against ANSWERS_WHEN of each MID candidate.</span>
+      </div>
+      <div class="flow-step">
+        <span class="flow-num">05</span>
+        <span class="flow-text"><strong>TLDR first.</strong> If the TLDR in the index already answers the query, the full file may not need to be read. Speed gain for simple queries.</span>
+      </div>
+    </div>
+
+    <div class="callout">
+      <p><strong>Result:</strong> a query that previously loaded 20 files now loads 2–4. Context is denser, response quality is higher, and no vector database or embedding model was invoked at any point.</p>
+    </div>
+
+    <h3>Staleness at query time</h3>
+
+    <p>Query time is <strong>read-only</strong>. The LLM never writes during a query. If it notices a relationship timestamp is older than the target file's <code>VALIDATED</code> date, it notes this internally but still loads the most recent version of the file. Re-evaluation happens at the next ingest — not now.</p>
+  </section>
+
+  <!-- EXAMPLES -->
+  <section id="examples">
+    <div class="section-label">06 — Examples</div>
+    <h2>The same pattern,<br>two different domains.</h2>
+
+    <h3>Coding agent — authentication module</h3>
+
+    <div class="code-label">Query: "how do I implement refresh token rotation?"</div>
+    <pre><code><span class="cm">Index scan:</span>
+  <span class="cv">"refresh" + "token" → matches jwt-authentication</span>
+
+<span class="cm">Load:</span>
+  <span class="cv-high">jwt-authentication          ← query match</span>
+  <span class="cv-high">oauth2:HIGH                 ← always load with jwt</span>
+  <span class="cv-high">refresh-token:HIGH          ← always load with jwt</span>
+  <span class="cv-mid">http-headers:MID            ← relevant to token transport</span>
+
+<span class="cm">Skip:</span>
+  <span class="cv">cors, api-security, database, cryptography ← not relevant</span>
+
+<span class="cm">Result: 4 files loaded instead of 18.</span></code></pre>
+
+    <h3>Civic intelligence platform — territorial security</h3>
+
+    <div class="code-label">knowledge/sicurezza-territoriale</div>
+    <pre><code><span class="cm">---</span>
+<span class="ck">CONCEPT:</span>     <span class="cv">sicurezza-territoriale</span>
+<span class="ck">TLDR:</span>        <span class="cv">Crime statistics by geographic area via ISTAT SDMX API, with trend and anomaly detection.</span>
+<span class="ck">ANSWERS_WHEN:</span> <span class="cv">crime, security, reati, statistics, ISTAT, territory, area, criminalità</span>
+
+<span class="ck">SIMILAR_HIGH:</span> <span class="cv-high">istat-sdmx-api:2025-04, geographic-filtering:2025-04, crime-statistics:2025-04</span>
+<span class="ck">SIMILAR_MID:</span>  <span class="cv-mid">sentiment-analysis:2025-04, civis-reporting:2025-04, anomaly-detection:2025-04</span>
+
+<span class="ck">CONFIDENCE:</span>  <span class="cv">high</span>
+<span class="ck">VALIDATED:</span>   <span class="cv">2025-04</span>
+<span class="cm">---</span></code></pre>
+
+    <div class="code-label">Query: "quanti reati a Fiumicino nel 2023?"</div>
+    <pre><code><span class="cm">Index scan:</span>
+  <span class="cv">"reati" + "Fiumicino" → matches sicurezza-territoriale</span>
+
+<span class="cm">Load:</span>
+  <span class="cv-high">sicurezza-territoriale     ← query match</span>
+  <span class="cv-high">istat-sdmx-api:HIGH        ← data source, always needed</span>
+  <span class="cv-high">geographic-filtering:HIGH  ← "Fiumicino" signals location</span>
+  <span class="cv-mid">civis-reporting:MID        ← civic context, conditionally relevant</span>
+
+<span class="cm">Skip:</span>
+  <span class="cv">rag-chat, multilingual-support, social-analytics</span></code></pre>
+
+  </section>
+
+  <!-- INTEGRATION -->
+  <section id="integration">
+    <div class="section-label">07 — Integration</div>
+    <h2>Layering CKP on top of<br>an existing memory bank.</h2>
+
+    <p>If you already use a structured memory bank — with files like <code>activeContext.md</code>, <code>projectbrief.md</code>, <code>progress.md</code>, and per-project files — CKP does not replace it. It layers on top, adding one thing the memory bank pattern is missing: <strong>explicit semantic relationships between files.</strong></p>
+
+    <p>In a typical memory bank, files are isolated. The agent knows what exists but must infer which files are related and how strongly. CKP makes those relationships explicit, pre-computed, and consistent — without changing the structure you already have.</p>
+
+    <div class="callout">
+      <p><strong>Rule of thumb:</strong> apply CKP headers to your <code>projects/</code> files. Leave <code>activeContext.md</code>, <code>dailyLog.md</code>, and <code>decisionLog.md</code> unchanged — they are session-scoped, not knowledge-scoped.</p>
+    </div>
+
+    <h3>Combined header — CKP + memory bank metadata</h3>
+
+    <p>CKP fields and your existing metadata coexist in the same header block. No conflicts, no duplication.</p>
+
+    <div class="code-label">memory-bank/projects/prescient.md</div>
+    <pre><code><span class="cm">---</span>
+<span class="cm"># CKP fields</span>
+<span class="ck">CONCEPT:</span>      <span class="cv">prescient</span>
+<span class="ck">TLDR:</span>         <span class="cv">Predictive analytics engine with ISTAT SDMX data and social sentiment.</span>
+<span class="ck">ANSWERS_WHEN:</span> <span class="cv">analytics, predictive, ISTAT, trend, forecast, anomaly, dati</span>
+<span class="ck">SIMILAR_HIGH:</span> <span class="cv-high">mentat:2025-04, istat-sdmx:2025-04</span>
+<span class="ck">SIMILAR_MID:</span>  <span class="cv-mid">civis:2025-04, social-analytics:2025-04, rag-chat:2025-04</span>
+<span class="ck">CONFIDENCE:</span>  <span class="cv">high</span>
+<span class="ck">VALIDATED:</span>   <span class="cv">2025-04</span>
+
+<span class="cm"># Memory bank metadata (unchanged)</span>
+<span class="ck">updated_at:</span>  <span class="cv">2025-04-01T10:00:00</span>
+<span class="ck">updated_by:</span>  <span class="cv">agente</span>
+<span class="ck">ttl:</span>         <span class="cv">30d</span>
+<span class="ck">project_id:</span>  <span class="cv">prescient</span>
+<span class="cm">---</span></code></pre>
+
+    <h3>How the boot flow changes</h3>
+
+    <div class="compare">
+      <div class="compare-box">
+        <div class="compare-title">Memory bank — current boot</div>
+        <div class="compare-item">Read <code>_index.md</code></div>
+        <div class="compare-item">Detect project from path/context</div>
+        <div class="compare-item">Load <code>projects/[detected].md</code></div>
+        <div class="compare-item">Agent infers which other files are needed</div>
+      </div>
+      <div class="compare-box highlight">
+        <div class="compare-title">Memory bank + CKP</div>
+        <div class="compare-item">Read <code>_index.md</code> (now includes TLDR + ANSWERS_WHEN)</div>
+        <div class="compare-item">Match query against ANSWERS_WHEN — detect relevant projects</div>
+        <div class="compare-item">Load matched file + its SIMILAR_HIGH automatically</div>
+        <div class="compare-item">Load SIMILAR_MID only if query domain matches</div>
+      </div>
+    </div>
+
+    <p>The key change: the agent stops inferring which files to load. It reads pre-declared relationships and follows them. Less reasoning overhead, more consistent context selection.</p>
+
+    <h3>What goes into the enhanced <code>_index.md</code></h3>
+
+    <p>Your existing <code>_index.md</code> already lists files with relevance and TTL. Add <code>TLDR</code> and <code>ANSWERS_WHEN</code> to each entry so the agent can route queries without opening individual files.</p>
+
+    <div class="code-label">memory-bank/_index.md — enhanced entry</div>
+    <pre><code><span class="cm">| File | TLDR | ANSWERS_WHEN | Rilevanza | TTL | Ultimo update |</span>
+<span class="cm">|---|---|---|---|---|---|</span>
+<span class="cv">| projects/prescient.md | Predictive analytics, ISTAT SDMX, social sentiment | analytics, predittivo, ISTAT, trend, anomalia | alta | 30d | 2025-04-01 |</span>
+<span class="cv">| projects/mentat.md | Civic intelligence platform, crime stats, RAG chat | mentat, civico, intelligence, chat, RAG, territorio | alta | 30d | 2025-04-01 |</span>
+<span class="cv">| projects/civis.md | Citizen issue reporting, municipality, Fiumicino | civis, segnalazione, comune, cittadino, problema | alta | 30d | 2025-03-15 |</span>
+<span class="cv">| projectbrief.md | Foundation del progetto, stack, vincoli assoluti | stack, vincoli, foundation, obiettivo | infinito | infinito | 2024-11-01 |</span></code></pre>
+
+    <h3>The AGENT.md rule to add</h3>
+
+    <p>Add this block to your existing <code>AGENT.md</code>, after your memory bank boot protocol. It is the only change required to the agent configuration.</p>
+
+    <div class="code-label">AGENT.md / GEMINI.md — add this block</div>
+    <pre><code><span class="cm">## CKP LLM — Compiled Knowledge Pattern (obbligatorio)
+
+### REGOLA ASSOLUTA — Zero domande all'utente
+
+Non fare MAI domande all'utente durante il flusso CKP.
+Ne prima, ne dopo, ne alla fine della risposta.
+Fai assunzioni ragionevoli basate sul codice esistente.
+Dichiara le assunzioni in una riga in cima alla risposta.
+L'utente corregge se necessario. Tu procedi sempre.
+
+---
+
+### BOOT — Si attiva SEMPRE al primo messaggio di ogni sessione
+
+Indipendentemente dal contenuto del messaggio dell'utente,
+il BOOT e' il primo step INCONDIZIONATO di ogni sessione.
+Non saltarlo mai. Non aspettare una richiesta esplicita.
+
+1. Usa la directory di lavoro corrente come PROJECT_ROOT (no find, no ls).
+2. Leggi PROJECT_ROOT/memory-bank/_index.md con una singola operazione diretta.
+3. Se esiste → vai a ROUTING.
+4. Se non esiste → vai a INIT.
+
+---
+
+### INIT — Inizializzazione automatica (zero domande)
+
+Se memory-bank/_index.md non esiste, crea la struttura in autonomia.
+
+Step 1 — Crea le directory:
+  memory-bank/  memory-bank/projects/  memory-bank/checkpoints/
+
+Step 2 — Analizza il progetto con lettura diretta:
+  package.json (name, description, dependencies)
+  README.md (prime 60 righe)
+  Struttura src/ o app/ (nomi cartelle primo livello)
+
+Step 3 — Analizza directory sorelle (stesso livello di PROJECT_ROOT):
+  per ognuna con package.json, leggi name e classifica HIGH/MID.
+
+Step 4 — Crea memory-bank/projects/[PROJECT_ID].md
+  Il file DEVE iniziare ESATTAMENTE con questo formato:
+
+---
+CONCEPT:      [nome-progetto normalizzato]
+TLDR:         [1 frase descrittiva ottimizzata per LLM]
+ANSWERS_WHEN: [8-12 keyword da nome, moduli, dipendenze]
+SIMILAR_HIGH: [progetto:YYYY-MM, max 3 — dipendenze dirette]
+SIMILAR_MID:  [progetto:YYYY-MM, max 5 — stesso dominio]
+CONFIDENCE:   high
+VALIDATED:    [YYYY-MM corrente]
+
+updated_at:   [ISO 8601 corrente]
+updated_by:   agente
+ttl:          30d
+project_id:   [nome-progetto normalizzato]
+---
+
+# [Nome Progetto]
+
+## Descrizione
+## Stack tecnico
+## Moduli principali
+## Note specifiche
+
+  Esempio compilato correttamente:
+
+---
+CONCEPT:      mentat
+TLDR:         Piattaforma civic intelligence con ISTAT SDMX, sentiment social e RAG chat per PA.
+ANSWERS_WHEN: mentat, civic, territorio, ISTAT, sicurezza, criminalita, NestJS, RAG, chat, analytics
+SIMILAR_HIGH: prescient:2025-05, civis:2025-05
+SIMILAR_MID:  travelguidehub:2025-05
+CONFIDENCE:   high
+VALIDATED:    2025-05
+
+updated_at:   2025-05-14T10:00:00
+updated_by:   agente
+ttl:          30d
+project_id:   mentat
+---
+
+Step 5 — Crea memory-bank/_index.md:
+---
+updated_at: [ISO 8601 corrente]
+updated_by: agente
+---
+# Memory Index — CKP LLM
+| Progetto | TLDR | ANSWERS_WHEN | TTL | Update |
+|---|---|---|---|---|
+| projects/[PROJECT_ID].md | [TLDR] | [ANSWERS_WHEN] | 30d | [YYYY-MM-DD] |
+
+Step 6 — Conferma con UNA SOLA RIGA e rispondi subito alla query:
+[CKP LLM inizializzato — memory-bank/ creata. Procedo.]
+
+---
+
+### ROUTING — Caricamento selettivo
+
+1. Confronta keyword della query con ANSWERS_WHEN di ogni entry.
+2. Carica il file con piu' match + tutti i suoi SIMILAR_HIGH (lettura diretta).
+3. Carica SIMILAR_MID solo se le loro ANSWERS_WHEN matchano la query.
+4. Se il TLDR risponde gia' alla query, non caricare il file completo.
+
+Dichiara in UNA SOLA RIGA esattamente cosi':
+[CKP: caricati X/Y file — match: [nome-file] via [keyword]]
+
+---
+
+### UPDATE — Aggiornamento knowledge base
+
+Ogni volta che crei o modifichi un file in memory-bank/projects/:
+
+HIGH — condividono API, modelli, architettura o dipendenze dirette. Max 3. concept:YYYY-MM
+MID  — stesso dominio, co-rilevanti, nessuna dipendenza diretta. Max 5. concept:YYYY-MM
+Sotto MID — non salvare.
+
+1. Aggiorna header CKP del file. Solo header, non il corpo.
+   Segui il formato esatto dell'esempio INIT.
+2. Aggiorna la riga in memory-bank/_index.md (lettura diretta).
+3. Solo su modifica: nei file vicini che hanno questo in SIMILAR,
+   aggiungi [stale?] se timestamp antecedente a oggi. Non riscrivere.
+
+Questo step e' parte del task. Non chiudere il task senza averlo completato.</span></code></pre>
+
+    <h3>Which memory bank files get CKP headers</h3>
+
+    <div class="tier-grid">
+      <div class="tier-row header">
+        <span>File</span>
+        <span>CKP header?</span>
+        <span></span>
+        <span>Why</span>
+      </div>
+      <div class="tier-row">
+        <div class="tier-cell"><code>projects/[name].md</code></div>
+        <div class="tier-cell"><span class="tier tier-high">YES</span></div>
+        <div class="tier-cell"></div>
+        <div class="tier-cell">Knowledge files — semantic relationships between projects matter</div>
+      </div>
+      <div class="tier-row">
+        <div class="tier-cell"><code>_index.md</code></div>
+        <div class="tier-cell"><span class="tier tier-mid">PARTIAL</span></div>
+        <div class="tier-cell"></div>
+        <div class="tier-cell">Add TLDR + ANSWERS_WHEN per entry. Keep existing table structure.</div>
+      </div>
+      <div class="tier-row">
+        <div class="tier-cell"><code>projectbrief.md</code></div>
+        <div class="tier-cell"><span class="tier" style="background:rgba(85,85,85,0.2);color:var(--text-dim)">NO</span></div>
+        <div class="tier-cell"></div>
+        <div class="tier-cell">Always loaded, session-independent foundation. No routing needed.</div>
+      </div>
+      <div class="tier-row">
+        <div class="tier-cell"><code>activeContext.md</code></div>
+        <div class="tier-cell"><span class="tier" style="background:rgba(85,85,85,0.2);color:var(--text-dim)">NO</span></div>
+        <div class="tier-cell"></div>
+        <div class="tier-cell">Session-scoped, changes every session. Not a knowledge file.</div>
+      </div>
+      <div class="tier-row">
+        <div class="tier-cell"><code>dailyLog.md</code></div>
+        <div class="tier-cell"><span class="tier" style="background:rgba(85,85,85,0.2);color:var(--text-dim)">NO</span></div>
+        <div class="tier-cell"></div>
+        <div class="tier-cell">Append-only log. Loaded only when explicitly requested.</div>
+      </div>
+      <div class="tier-row">
+        <div class="tier-cell"><code>decisionLog.md</code></div>
+        <div class="tier-cell"><span class="tier" style="background:rgba(85,85,85,0.2);color:var(--text-dim)">NO</span></div>
+        <div class="tier-cell"></div>
+        <div class="tier-cell">Architectural archive. Loaded on demand, not by routing.</div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- RULES -->
+  <section id="rules">
+    <div class="section-label">08 — Rules</div>
+    <h2>The complete rule set.</h2>
+
+    <h3>Header rules</h3>
+    <ul class="rules">
+      <li data-n="R1">Every knowledge file must have a CKP header block.</li>
+      <li data-n="R2"><code>SIMILAR_HIGH</code> contains at most 3 entries. Write fewer if fewer qualify.</li>
+      <li data-n="R3"><code>SIMILAR_MID</code> contains at most 5 entries. Write fewer if fewer qualify.</li>
+      <li data-n="R4">Do not store <code>SIMILAR_LOW</code>. Weak relationships are noise, not signal.</li>
+      <li data-n="R5">Every SIMILAR entry carries a timestamp: <code>concept:YYYY-MM</code>.</li>
+      <li data-n="R6">Relationships are unidirectional — each file declares its own outgoing relationships only.</li>
+    </ul>
+
+    <h3>Ingest rules</h3>
+    <ul class="rules">
+      <li data-n="R7">Ingest runs every time a knowledge file is created or modified.</li>
+      <li data-n="R8">The fixed rubric must be included verbatim in every ingest prompt.</li>
+      <li data-n="R9">Ingest updates only the file being ingested and the index. No cascading updates.</li>
+      <li data-n="R10">The index contains only header blocks — never body content.</li>
+    </ul>
+
+    <h3>Query time rules</h3>
+    <ul class="rules">
+      <li data-n="R11">Query time is read-only. The LLM never writes during a query.</li>
+      <li data-n="R12">The index is always in context. Body files are loaded on demand.</li>
+      <li data-n="R13">SIMILAR_HIGH files are always loaded alongside their parent.</li>
+      <li data-n="R14">SIMILAR_MID files are loaded only if relevant to the current query.</li>
+      <li data-n="R15">Staleness is noted but not acted upon at query time. Re-evaluated at next ingest.</li>
+    </ul>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq">
+    <div class="section-label">09 — FAQ</div>
+    <h2>Common questions.</h2>
+
+    <div class="faq-item">
+      <div class="faq-q">Does this replace RAG?</div>
+      <div class="faq-a">No. CKP is designed for structured, maintained knowledge bases of 10–200 files. For millions of documents, RAG remains the right tool. CKP replaces RAG for the use cases where Karpathy's wiki already works — it just makes those use cases faster and more precise.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">Do the SIMILAR scores need to be re-computed if I use a different LLM?</div>
+      <div class="faq-a">Not necessarily. The fixed rubric with anchor examples produces consistent results across major LLMs. If you switch LLMs, a re-ingest pass is recommended but not urgent — the tier categories are stable enough to be useful even across model changes.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">What happens if a concept belongs to two SIMILAR_HIGH groups?</div>
+      <div class="faq-a">This is expected and fine. Each file independently declares its outgoing relationships. If <code>oauth2</code> is HIGH for both <code>jwt</code> and <code>pkce</code>, both files declare it independently. At query time, whichever file is matched first will trigger loading <code>oauth2</code>.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">Is there a minimum number of files where this makes sense?</div>
+      <div class="faq-a">Below ~10 files, loading everything into context is still cheap and CKP overhead isn't worth it. The pattern pays off starting around 15–20 files, and becomes increasingly valuable as the knowledge base grows.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">Does the file format matter?</div>
+      <div class="faq-a">No. The header block works in Markdown frontmatter, an HTML comment, a plain text block, or any other format. The pattern is format-agnostic by design. Choose whatever format fits your existing workflow.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">What does "unidirectional relationships" mean in practice?</div>
+      <div class="faq-a">File A may list B as HIGH, while B lists A as MID — or not at all. This is intentional. Each file describes its own view of the knowledge space. Asymmetric relationships often reflect real semantic asymmetry: knowing B is essential for understanding A, but A is just useful context for B.</div>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="container">
+    <div class="footer-inner">
+      <span class="footer-text">CKP LLM — Compiled Knowledge Pattern &mdash; by <strong style="color:var(--text-muted)">Alessandro Marocchini</strong></span>
+      <a href="https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f" class="footer-link" target="_blank">Karpathy's original →</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
